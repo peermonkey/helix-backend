@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helix Data Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --neutral: #6366f1;
+            --neutral-light: #eef2ff;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 0.75rem;
+            --radius-sm: 0.5rem;
+            --radius-xs: 0.25rem;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 24px;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 1.875rem;
+            color: var(--text);
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, var(--primary), var(--neutral));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background-color: var(--card-bg);
+            padding: 0.625rem 1rem;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .status-indicator {
+            position: relative;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--danger);
+            transition: var(--transition);
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(239, 68, 68, 0.15);
+            z-index: -1;
+        }
+
+        .status-indicator.connected {
+            background-color: var(--success);
+        }
+
+        .status-indicator.connected::after {
+            background-color: rgba(16, 185, 129, 0.15);
+        }
+
+        #connectionStatus {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--primary);
+            margin-right: 10px;
+            border-radius: var(--radius-xs);
+        }
+
+        .timeframe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .timeframe-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeframe-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--neutral), var(--primary));
+        }
+
+        .timeframe-card:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-3px);
+        }
+
+        .timeframe-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.625rem;
+            font-size: 0.9375rem;
+            padding: 0.375rem 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.05);
+        }
+
+        .data-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .data-value {
+            font-weight: 600;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-xs);
+            transition: var(--transition);
+        }
+
+        .positive {
+            color: var(--success);
+            background-color: var(--success-light);
+        }
+
+        .negative {
+            color: var(--danger);
+            background-color: var(--danger-light);
+        }
+
+        .neutral {
+            color: var(--neutral);
+            background-color: var(--neutral-light);
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-top: 1rem;
+            padding-top: 0.625rem;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        .log-container {
+            max-height: 240px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            border: 1px solid var(--border);
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-entry:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--primary);
+            margin-right: 0.5rem;
+            font-weight: 600;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            outline: none;
+            margin-right: 0.75rem;
+            margin-top: 1rem;
+            box-shadow: var(--shadow-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        #disconnectButton {
+            background-color: #e11d48;
+        }
+
+        #disconnectButton:hover {
+            background-color: #be123c;
+        }
+
+        #disconnectButton:disabled {
+            background-color: #fca5a5;
+        }
+
+        /* Icons for buttons */
+        button::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        #connectButton::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='M12 5l7 7-7 7'/%3E%3C/svg%3E");
+        }
+
+        #disconnectButton::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18'/%3E%3Cpath d='M6 6l12 12'/%3E%3C/svg%3E");
+        }
+
+        @media (max-width: 768px) {
+            .timeframe-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .status {
+                align-self: flex-start;
+            }
+
+            body {
+                padding: 16px;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(79, 70, 229, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(79, 70, 229, 0.5);
+        }
+
+        /* Subtle animations */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-indicator.connected {
+            animation: pulse 2s infinite;
+        }
+
+        /* Card loading animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .timeframe-card.loading {
+            position: relative;
+        }
+
+        .timeframe-card.loading::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255, 0) 0%, 
+                rgba(255,255,255, 0.6) 50%, 
+                rgba(255,255,255, 0) 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Helix Data Dashboard</h1>
+            <div class="status">
+                <div id="statusIndicator" class="status-indicator"></div>
+                <span id="connectionStatus">Disconnected</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Connection Details</div>
+            <div class="data-row">
+                <span class="data-label">Server:</span>
+                <span class="data-value">ws://localhost:3000</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span id="statusDetail" class="data-value">Initializing...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Last Update:</span>
+                <span id="lastUpdate" class="data-value">Never</span>
+            </div>
+            <button id="connectButton" onclick="connectWebSocket()">Connect</button>
+            <button id="disconnectButton" onclick="disconnectWebSocket()" disabled>Disconnect</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Helix Data</div>
+            <div id="timeframeGrid" class="timeframe-grid">
+                <!-- Timeframe cards will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Connection Log</div>
+            <div id="logContainer" class="log-container">
+                <!-- Log entries will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let socket = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectDelay = 3000;
+        
+        // Store the latest helix data
+        let helixData = {};
+        
+        // DOM elements
+        const statusIndicator = document.getElementById('statusIndicator');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const statusDetail = document.getElementById('statusDetail');
+        const lastUpdate = document.getElementById('lastUpdate');
+        const timeframeGrid = document.getElementById('timeframeGrid');
+        const logContainer = document.getElementById('logContainer');
+        const connectButton = document.getElementById('connectButton');
+        const disconnectButton = document.getElementById('disconnectButton');
+        
+        // Log a message to the log container
+        function log(message) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+            logContainer.prepend(logEntry);
+            
+            // Add a subtle animation to the new log entry
+            logEntry.style.opacity = '0';
+            logEntry.style.transform = 'translateY(-10px)';
+            logEntry.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            
+            // Trigger reflow
+            logEntry.offsetHeight;
+            
+            // Apply animation
+            logEntry.style.opacity = '1';
+            logEntry.style.transform = 'translateY(0)';
+            
+            // Limit log entries to prevent memory issues
+            if (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // Update the connection status UI
+        function updateConnectionStatus(connected, message) {
+            if (connected) {
+                statusIndicator.classList.add('connected');
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.style.color = 'var(--success)';
+                connectButton.disabled = true;
+                disconnectButton.disabled = false;
+            } else {
+                statusIndicator.classList.remove('connected');
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.style.color = 'var(--danger)';
+                connectButton.disabled = false;
+                disconnectButton.disabled = true;
+            }
+            statusDetail.textContent = message;
+        }
+        
+        // Format a number with a plus sign for positive values
+        function formatNumber(num) {
+            const parsedNum = parseFloat(num);
+            return parsedNum >= 0 ? `+${parsedNum.toFixed(2)}` : `${parsedNum.toFixed(2)}`;
+        }
+        
+        // Create or update a timeframe card with helix data
+        function updateTimeframeCard(timeframe, data) {
+            // Find existing card or create a new one
+            let card = document.getElementById(`timeframe-${timeframe}`);
+            if (!card) {
+                card = document.createElement('div');
+                card.id = `timeframe-${timeframe}`;
+                card.className = 'timeframe-card loading';
+                timeframeGrid.appendChild(card);
+                
+                // Remove loading state after a brief delay
+                setTimeout(() => {
+                    card.classList.remove('loading');
+                }, 600);
+            }
+            
+            // Get the class for coloring based on helix value
+            const helixClass = 
+                parseFloat(data.helixValue) > 1 ? 'positive' : 
+                parseFloat(data.helixValue) < -1 ? 'negative' : 'neutral';
+            
+            // Update the card's HTML
+            card.innerHTML = `
+                <div class="timeframe-title">${timeframe}</div>
+                <div class="data-row">
+                    <span class="data-label">BTC Delta:</span>
+                    <span class="data-value ${parseFloat(data.btcDelta) >= 0 ? 'positive' : 'negative'}">
+                        ${formatNumber(data.btcDelta)}%
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">ETH Delta:</span>
+                    <span class="data-value ${parseFloat(data.ethDelta) >= 0 ? 'positive' : 'negative'}">
+                        ${formatNumber(data.ethDelta)}%
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Helix Value:</span>
+                    <span class="data-value ${helixClass}">
+                        ${formatNumber(data.helixValue)}
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Interpretation:</span>
+                    <span class="data-value ${helixClass}">
+                        ${data.interpretation}
+                    </span>
+                </div>
+                <div class="timestamp">Updated: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+            `;
+            
+            // Highlight the card briefly to show it's been updated
+            card.style.transition = 'background-color 0.5s ease';
+            card.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+            setTimeout(() => {
+                card.style.backgroundColor = '';
+            }, 500);
+        }
+        
+        // Process received message from WebSocket
+        function processMessage(event) {
+            try {
+                const message = JSON.parse(event.data);
+                
+                switch (message.type) {
+                    case 'welcome':
+                        log(`Server: ${message.message}`);
+                        break;
+                    
+                    case 'helix_update':
+                        log('Received helix data update');
+                        lastUpdate.textContent = new Date().toLocaleTimeString();
+                        
+                        // Clear the grid if timeframes have changed
+                        const timeframes = Object.keys(message.data);
+                        if (timeframes.length > 0 && 
+                            JSON.stringify(Object.keys(helixData)) !== JSON.stringify(timeframes)) {
+                            timeframeGrid.innerHTML = '';
+                        }
+                        
+                        // Update each timeframe card
+                        helixData = message.data;
+                        for (const [timeframe, data] of Object.entries(message.data)) {
+                            updateTimeframeCard(timeframe, data);
+                        }
+                        break;
+                    
+                    default:
+                        log(`Received unknown message type: ${message.type}`);
+                }
+            } catch (error) {
+                log(`Error processing message: ${error.message}`);
+            }
+        }
+        
+        // Connect to the WebSocket server
+        function connectWebSocket() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                log('Already connected');
+                return;
+            }
+            
+            try {
+                log('Connecting to WebSocket server...');
+                updateConnectionStatus(false, 'Connecting...');
+                
+                socket = new WebSocket('ws://localhost:3000');
+                
+                socket.onopen = function() {
+                    log('Connection established');
+                    updateConnectionStatus(true, 'Connection established');
+                    reconnectAttempts = 0;
+                };
+                
+                socket.onmessage = processMessage;
+                
+                socket.onclose = function(event) {
+                    updateConnectionStatus(false, `Connection closed: ${event.code}`);
+                    log(`Connection closed: ${event.code} ${event.reason || ''}`);
+                    
+                    // Attempt to reconnect if not explicitly disconnected
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        const delay = reconnectDelay * reconnectAttempts;
+                        log(`Attempting to reconnect in ${delay/1000} seconds...`);
+                        setTimeout(connectWebSocket, delay);
+                    } else {
+                        log('Maximum reconnection attempts reached');
+                    }
+                };
+                
+                socket.onerror = function(error) {
+                    log(`WebSocket error: ${error.message || 'Unknown error'}`);
+                    updateConnectionStatus(false, 'Connection error');
+                };
+            } catch (error) {
+                log(`Error creating WebSocket: ${error.message}`);
+                updateConnectionStatus(false, 'Connection failed');
+            }
+        }
+        
+        // Disconnect from the WebSocket server
+        function disconnectWebSocket() {
+            if (socket) {
+                log('Disconnecting from server...');
+                socket.close(1000, 'User disconnected');
+                updateConnectionStatus(false, 'Disconnected by user');
+                reconnectAttempts = maxReconnectAttempts; // Prevent auto reconnect
+            }
+        }
+        
+        // Add some initial log entries
+        log('Dashboard initialized');
+        log('Click "Connect" to connect to the WebSocket server');
+        
+        // Auto-connect when the page loads
+        window.addEventListener('load', () => {
+            setTimeout(connectWebSocket, 1000);
+        });
+
+        // Create a mock skeleton loading state while waiting for data
+        function createLoadingCards() {
+            // Create 4 placeholder cards
+            for (let i = 1; i <= 4; i++) {
+                let card = document.createElement('div');
+                card.className = 'timeframe-card loading';
+                card.innerHTML = `
+                    <div class="timeframe-title">Loading data...</div>
+                    <div class="data-row">
+                        <span class="data-label">BTC Delta:</span>
+                        <span class="data-value">...</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">ETH Delta:</span>
+                        <span class="data-value">...</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Helix Value:</span>
+                        <span class="data-value">...</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Interpretation:</span>
+                        <span class="data-value">...</span>
+                    </div>
+                    <div class="timestamp">Waiting for data...</div>
+                `;
+                timeframeGrid.appendChild(card);
+            }
+        }
+        
+        // Add loading cards on init
+        if (timeframeGrid.children.length === 0) {
+            createLoadingCards();
+        }
+    </script>
+</body>
+</html>
