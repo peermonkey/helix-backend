@@ -322,6 +322,7 @@ async function calculateAllDeltas() {
         console.log(`${timeframe.padEnd(9)} | Missing data`);
       }
     }
+
   }
   
   logActivity(`[DELTA] Calculated all deltas (BTC: ${cache.currentPrices.BTCUSDT}, ETH: ${cache.currentPrices.ETHUSDT})`);
@@ -933,4 +934,3 @@ process.on('SIGINT', () => {
     });
   });
 });
-
